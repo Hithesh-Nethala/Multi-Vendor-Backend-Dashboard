@@ -35,7 +35,8 @@ const firmRegister=async(req,res)=>{
         ownerexist.firm.push(savedfirm);
         await ownerexist.save();
         const firmid=savedfirm._id;
-        return res.status(200).json({message:'Firm Registered Successfully',firmid})
+        const firmname=savedfirm.name;
+        return res.status(200).json({message:'Firm Registered Successfully',firmid,firmname})
     } catch (error) {
         return res.status(500).json({message:`${error}`})
         
