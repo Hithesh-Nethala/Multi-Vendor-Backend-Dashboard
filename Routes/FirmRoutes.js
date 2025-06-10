@@ -9,6 +9,8 @@ router.get('/allproducts',middleware,FirmController.firmProducts)
 
 router.get('/indvproducts/:id',middleware,FirmController.firmIndvProducts)
 
+router.get('/indv/:id',FirmController.firmIndv)
+
 router.delete('/delete/:id',middleware,FirmController.firmDelete)
 
 router.get('/uploads/:imageName', (req, res) => {

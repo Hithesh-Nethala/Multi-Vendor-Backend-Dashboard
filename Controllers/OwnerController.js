@@ -67,16 +67,13 @@ const allOwners=async(req,res)=>{
 const indvOwner=async(req,res)=>{
     try {
         let exist=await Registration.findById(req.params.id).populate('firm')
+        // console.log(req.params.id)
         if(!exist){
             return res.status(400).json({message:"Owner Not Existed In DB"})
         }
         const ownername=exist.name;
-        const firmid=exist.firm[0]._id
-        const firmname=exist.firm[0].name;
-        if(!firmid){
-            return res.status(400).json({message:'No Firm Found'})
-        }
-        return res.status(200).json({firmid,ownername,firmname});
+        // console.log(ownername)
+        return res.status(200).json({ownername});
     } catch (error) {
         return res.status(500).json({message:'Getting Owner Failed'})
     }

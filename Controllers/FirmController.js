@@ -71,6 +71,24 @@ const firmIndvProducts=async(req,res)=>{
     }
 }
 
+const firmIndv=async(req,res)=>{
+    try {
+        let exist=await Registration.findById(req.params.id).populate('firm');
+        if(!exist){
+            return res.status(400).json({message:'Owner Not Found'})
+        }
+        if (!exist.firm || exist.firm.length === 0) {
+            return res.status(400).json({ message: 'No Firms Found for Owner' });
+        }
+        const firmid=exist.firm[0]._id||null;
+        const firmname=exist.firm[0].name||null
+        return res.status(200).json({firmid,firmname})
+    } catch (error) {
+        return res.status(500).json({message:'Firm Not Retrived'})
+    }
+
+}
+
 const firmDelete=async(req,res)=>{
     try {
         let firm_del=await Firm.findByIdAndDelete(req.params.id);
@@ -84,4 +102,4 @@ const firmDelete=async(req,res)=>{
     }
 }
 
-module.exports={firmRegister,upload,firmProducts,firmDelete,firmIndvProducts}
+module.exports={firmRegister,upload,firmProducts,firmDelete,firmIndvProducts,firmIndv}
