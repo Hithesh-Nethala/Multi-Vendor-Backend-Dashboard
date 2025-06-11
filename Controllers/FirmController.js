@@ -3,22 +3,42 @@ var Registration=require('../Models/OwnerModel')
 var Productadd=require('../Models/ProductModel');
 const multer = require('multer');
 const path = require('path');
+var dotenv=require('dotenv');
+const cloudinary=require('cloudinary').v2;
 
-const storage = multer.diskStorage({
-    destination: 'uploads/', // Folder to store images
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+dotenv.config();
+cloudinary.config({
+    cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:process.env.CLOUDINARY_API_KEY,
+    api_secret:process.env.CLOUDINARY_API_SECRET
 });
 
+
+const storage=multer.memoryStorage();
+
 const upload = multer({ storage: storage });
+
+const streamUpload = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'firms' },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
 
 
 const firmRegister=async(req,res)=>{
     const {name,address,offer}=req.body;
     const category=JSON.parse(req.body.category);
     const region=JSON.parse(req.body.region)
-    const image=req.file? req.file.filename:undefined;
     try {
         let exist=await Firm.findOne({name:name.toLowerCase()});
         if(exist){
@@ -29,13 +49,18 @@ const firmRegister=async(req,res)=>{
         }
 
         let ownerexist=await Registration.findById(req.user.id)
-
-        let newData=new Firm({name:name.toLowerCase(),address,category,region,offer,image,owner:ownerexist._id});
+        let imageUrl=null;
+        if(req.file){
+            const result = await streamUpload(req.file.buffer);
+            imageUrl = result.secure_url;
+        }
+        let newData=new Firm({name:name.toLowerCase(),address,category,region,offer,image:imageUrl,owner:ownerexist._id});
         const savedfirm=await newData.save();
         ownerexist.firm.push(savedfirm);
         await ownerexist.save();
         const firmid=savedfirm._id;
-        return res.status(200).json({message:'Firm Registered Successfully',firmid})
+        const firmname=savedfirm.name;
+        return res.status(200).json({message:'Firm Registered Successfully',firmid,firmname})
     } catch (error) {
         return res.status(500).json({message:`${error}`})
         
